@@ -1,0 +1,98 @@
+/* MiuiX M3U8 浏览器扩展 —— 页面右下角悬浮窗样式
+ * 由 content.js 注入到 Shadow DOM 内（与页面 CSS 完全隔离），token 取自 common.css。
+ * 只在 .mx-ov 作用域内生效，不影响宿主页面。
+ */
+
+.mx-ov {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  font-family: var(--mx-font);
+  font-size: 17px;
+  color: var(--mx-on-surface);
+  line-height: 1.4;
+}
+
+/* 悬浮球（FAB：主色 + 白图标；Miuix FAB 最小 60x60，页面悬浮窗取 56 以免挡内容） */
+.mx-fab {
+  position: relative;
+  width: 56px; height: 56px;
+  border: 0; border-radius: 999px;
+  background: var(--mx-primary); color: var(--mx-on-primary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.mx-fab:hover { transform: translateY(-1px); }
+.mx-fab:active { transform: scale(0.96); }
+.mx-fab { cursor: grab; touch-action: none; }
+.mx-ov.mx-dragging .mx-fab { cursor: grabbing; }
+
+/* 标题栏也是拖动把手；里面的按钮保持自己的光标 */
+.mx-card-head { cursor: grab; touch-action: none; }
+.mx-card-head button { cursor: pointer; }
+.mx-ov.mx-dragging .mx-card-head { cursor: grabbing; }
+
+/* 拖动过程中关掉过渡与 hover 位移，否则会跟手不及、看着发飘 */
+.mx-ov.mx-dragging .mx-fab { transition: none; transform: none; }
+.mx-ov.mx-dragging { user-select: none; }
+.mx-fab-active { background: var(--mx-primary); }
+
+.mx-fab-badge {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box;
+  border-radius: 999px; background: var(--mx-surface-container); color: var(--mx-primary);
+  font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+  box-shadow: 0 0 0 2px var(--mx-primary);
+}
+
+/* 面板：Miuix Card 形态（16dp 圆角、无边框；浮在页面内容上，保留一层很淡的投影保证可读性） */
+.mx-card {
+  width: 340px; max-width: calc(100vw - 40px);
+  max-height: min(64vh, 460px);
+  display: flex; flex-direction: column;
+  background: var(--mx-surface-container);
+  border-radius: var(--mx-r-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+.mx-card[hidden] { display: none; }
+
+.mx-card-head {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 52px; padding: 0 8px 0 16px;   /* TopAppBar 折叠高 52 */
+  border-bottom: 1px solid var(--mx-divider);
+}
+.mx-brand { font-size: 14px; font-weight: 700; color: var(--mx-primary); flex: none; }
+.mx-card-title {
+  flex: 1; min-width: 0; font-size: 15px; color: var(--mx-on-surface);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.mx-status { padding: 0 16px; margin-top: 8px; }
+.mx-status[hidden] { display: none; }
+
+.mx-list {
+  flex: 1; overflow-y: auto; overscroll-behavior: contain;
+  padding: 8px; display: flex; flex-direction: column; gap: 2px;
+}
+.mx-list::-webkit-scrollbar { width: 8px; }
+.mx-list::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.35); border-radius: 10px; }
+
+.mx-card-foot {
+  display: flex; gap: 8px; padding: 12px 16px 16px;
+  border-top: 1px solid var(--mx-divider);
+}
+/* 面板只有 340px，两个按钮各占一半；Miuix 按钮默认 17px 字号会把
+   "发送到 MiuiX M3U8" 挤成两行 —— 收窄字号 + 禁止换行 */
+.mx-card-foot .mx-btn {
+  flex: 1; min-width: 0;
+  font-size: 14px;
+  padding: 0 10px;
+  white-space: nowrap;
+}

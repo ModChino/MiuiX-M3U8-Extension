@@ -1,0 +1,49 @@
+/* MiuiX M3U8 扩展设置页。token 与组件样式在 common.css。 */
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--mx-surface);
+}
+
+/* 页面头：与 TopAppBar 折叠高一致，标题水平内边距 16（页面留白） */
+.mx-page-head {
+  padding: 20px 16px 8px;
+  background: var(--mx-surface);
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.mx-page-head .mx-sub { margin-top: 4px; }
+
+.mx-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 16px 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;                 /* 卡片之间 16（Miuix 官方示例） */
+  font-size: 17px;
+}
+.mx-page .mx-card-panel { gap: 12px; }
+
+.mx-field-row { display: flex; align-items: center; gap: 12px; }
+.mx-field-label { width: 84px; flex: none; font-size: 15px; color: var(--mx-on-surface); }
+.mx-field-port { width: 140px; flex: none; }
+.mx-inline { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.mx-inline .mx-hint { flex: 1; min-width: 0; }
+
+.mx-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mx-disabled); flex: none; }
+.mx-dot-ok { background: #12B76A; }
+.mx-dot-bad { background: var(--mx-error); }
+
+.mx-hint { margin: 0; line-height: 1.6; }
+.mx-hint b { font-weight: 700; }
+.mx-hint code {
+  font-family: var(--mx-mono); font-size: 12px; padding: 1px 5px;
+  border-radius: var(--mx-r-xs); background: var(--mx-surface-container-highest);
+}
+
+.mx-status { padding: 0 4px 12px; }
+.mx-status[hidden] { display: none; }

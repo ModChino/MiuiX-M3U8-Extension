@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MiuiX M3U8 扩展设置</title>
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="options.css">
+</head>
+<body class="mx-root">
+
+<header class="mx-page-head">
+  <div class="mx-title">扩展设置</div>
+  <div class="mx-sub">嗅探到的 m3u8 / mpd 交给本地 MiuiX M3U8 下载（N_m3u8DL-RE）</div>
+</header>
+
+<main class="mx-page">
+
+  <section class="mx-card-panel">
+    <div class="mx-section-title">本地接收端</div>
+
+    <div class="mx-field-row">
+      <label class="mx-field-label" for="port">端口</label>
+      <input class="mx-field mx-field-port" id="port" inputmode="numeric" autocomplete="off" placeholder="五位数端口">
+    </div>
+
+    <div class="mx-field-row">
+      <label class="mx-field-label" for="token">访问令牌</label>
+      <input class="mx-field mx-field-mono" id="token" autocomplete="off" spellcheck="false" placeholder="从 MiuiX M3U8 设置页复制">
+    </div>
+
+    <div class="mx-field-row">
+      <span class="mx-field-label">连接</span>
+      <div class="mx-inline">
+        <span class="mx-dot" id="conn-dot"></span>
+        <span class="mx-hint" id="conn-text">未测试</span>
+        <button class="mx-btn" id="test" type="button">测试连接</button>
+      </div>
+    </div>
+
+    <p class="mx-hint">
+      在 MiuiX M3U8 里打开「设置 → 浏览器扩展」，把「接收端」开关打开：卡片里的<b>端口</b>和<b>访问令牌</b>就是这两项
+      （令牌点右侧复制按钮）。接收端只监听 127.0.0.1，没开的时候扩展发不过去。
+    </p>
+  </section>
+
+  <section class="mx-card-panel">
+    <div class="mx-section-title">界面形式</div>
+    <div class="mx-seg" id="ui-mode">
+      <label><input type="radio" name="uiMode" value="popup"><span>点图标弹面板</span></label>
+      <label><input type="radio" name="uiMode" value="overlay"><span>页面悬浮窗</span></label>
+    </div>
+    <p class="mx-hint">
+      两种界面都能用，这里选默认用哪种：「点图标弹面板」不碰页面；「页面悬浮窗」会在网页右下角常驻一个悬浮球，
+      有候选时显示数量，点开就是同一个候选列表。
+    </p>
+  </section>
+
+  <section class="mx-card-panel">
+    <div class="mx-section-title">外观</div>
+    <div class="mx-seg" id="theme">
+      <label><input type="radio" name="theme" value="system"><span>跟随系统</span></label>
+      <label><input type="radio" name="theme" value="light"><span>浅色</span></label>
+      <label><input type="radio" name="theme" value="dark"><span>深色</span></label>
+    </div>
+    <p class="mx-hint">
+      只影响扩展自己的界面（弹出面板 / 本页 / 页面悬浮窗），不动网页本身。切换后立即生效，不用刷新页面。
+    </p>
+  </section>
+
+  <section class="mx-card-panel">
+    <div class="mx-section-title">默认行为</div>
+
+    <div class="mx-row">
+      <div class="mx-row-main">
+        <div class="mx-row-title">复制的命令带 --auto-select</div>
+        <div class="mx-row-sub">让 N_m3u8DL-RE 自动挑最佳流（主播放列表推荐打开）</div>
+      </div>
+      <span class="mx-switch"><input type="checkbox" id="auto-select"><span class="mx-switch-track"></span><span class="mx-switch-thumb"></span></span>
+    </div>
+
+    <div class="mx-row">
+      <div class="mx-row-main">
+        <div class="mx-row-title">读播放列表推断清晰度</div>
+        <div class="mx-row-sub">URL 里看不出画质时，额外请求一次清单（最多 3 次/页）</div>
+      </div>
+      <span class="mx-switch"><input type="checkbox" id="enrich"><span class="mx-switch-track"></span><span class="mx-switch-thumb"></span></span>
+    </div>
+
+
+    <p class="mx-hint">
+      发送永远是手动点「发送到 MiuiX M3U8」——不会捕获即发送，预加载 / 广告位的 m3u8 只会躺在候选列表里。
+    </p>
+  </section>
+
+  <section class="mx-card-panel">
+    <div class="mx-section-title">关于</div>
+    <div class="mx-row">
+      <div class="mx-row-main">
+        <div class="mx-row-title">MiuiX M3U8 视频嗅探</div>
+        <div class="mx-row-sub">版本 <span id="version">-</span> · Manifest V3 · 开发者模式加载，不上架商店</div>
+      </div>
+    </div>
+    <p class="mx-hint">
+      想在真实浏览器里验证嗅探是否工作，打开扩展目录里的 <code>test/mock-site.html</code>
+      （或按 README 的「真机验证」一节操作）。
+    </p>
+  </section>
+
+  <div class="mx-status" id="status" hidden></div>
+</main>
+
+<script src="lib/logic.js"></script>
+<script src="lib/ui.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

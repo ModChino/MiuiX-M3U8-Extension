@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "MiuiX M3U8 视频嗅探",
+  "version": "1.0.0",
+  "description": "嗅探网页里的 m3u8 / mpd，手动选中一条后连同请求头交给本地 MiuiX M3U8（N_m3u8DL-RE）下载，也可一键复制命令行。",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "webRequest",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "MiuiX M3U8 视频嗅探",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/logic.js", "lib/ui.js", "content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["common.css", "content.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+/* MiuiX M3U8 扩展面板（点扩展图标弹出）。token 与组件样式在 common.css。 */
+
+body {
+  width: 380px;
+  margin: 0;
+  max-height: 580px;
+  display: flex;
+  flex-direction: column;
+  background: var(--mx-surface);
+}
+
+/* TopAppBar：折叠高 52、标题水平内边距 16（页面留白，与 app/ui 的 SPACING.page 一致） */
+.mx-topbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 0 8px 0 16px;
+  background: var(--mx-surface);
+  border-bottom: 1px solid var(--mx-divider);
+  flex: none;
+}
+.mx-topbar-main { flex: 1; min-width: 0; padding: 8px 0; }
+.mx-topbar .mx-title { font-size: 17px; }
+.mx-topbar .mx-sub {
+  font-size: 13px; color: var(--mx-on-surface-summary); margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.mx-conn {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  padding: 10px 16px 0; font-size: 13px; color: var(--mx-on-surface-summary);
+}
+.mx-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mx-disabled); flex: none; }
+.mx-dot-ok { background: #12B76A; }       /* HyperOS 语义绿，见 app/miuix/tokens.py */
+.mx-dot-bad { background: var(--mx-error); }
+
+.mx-status { padding: 8px 16px 0; flex: none; }
+.mx-status[hidden] { display: none; }
+
+.mx-list {
+  flex: 1;
+  min-height: 120px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mx-list::-webkit-scrollbar { width: 8px; }
+.mx-list::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.35); border-radius: 10px; }
+
+.mx-foot {
+  flex: none;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--mx-divider);
+}
+.mx-foot-row { display: flex; gap: 8px; }
+.mx-foot-row .mx-btn { flex: 1; }

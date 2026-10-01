@@ -1,0 +1,19 @@
+# ---- 内部工作文档：只在本机保留，不进仓库 ----
+# HANDOVER 含本机绝对路径 + 桌面端构建/打包流程；VERIFY 含 Windows 打包路径
+HANDOVER.md
+VERIFY.md
+
+# ---- 自检与测试页：本机跑，不进仓库 ----
+test/
+
+# ---- 系统杂物 ----
+# 本目录会被 rsync 到 Windows 构建目录，下面两个是那边最容易混进来的
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
+*.swp
+*~

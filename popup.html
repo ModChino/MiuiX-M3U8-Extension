@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MiuiX M3U8 嗅探</title>
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body class="mx-root">
+
+<header class="mx-topbar">
+  <div class="mx-topbar-main">
+    <div class="mx-title">MiuiX M3U8 嗅探</div>
+    <div class="mx-sub" id="page-title">正在读取当前标签页…</div>
+  </div>
+  <button class="mx-icon-btn" id="refresh" type="button" title="重新扫描此页"></button>
+  <button class="mx-icon-btn" id="clear" type="button" title="清空此页候选"></button>
+</header>
+
+<div class="mx-conn" id="conn">
+  <span class="mx-dot" id="conn-dot"></span>
+  <span id="conn-text">正在检查本地接收端…</span>
+</div>
+
+<div class="mx-status" id="status" hidden></div>
+
+<main class="mx-list" id="list" role="radiogroup" aria-label="候选视频流"></main>
+
+<footer class="mx-foot">
+  <button class="mx-btn mx-btn-primary mx-btn-block" id="send" type="button">发送到 MiuiX M3U8</button>
+  <div class="mx-foot-row">
+    <button class="mx-btn" id="copy" type="button">复制命令</button>
+    <button class="mx-btn mx-btn-text" id="options" type="button">设置</button>
+  </div>
+</footer>
+
+<script src="lib/logic.js"></script>
+<script src="lib/ui.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

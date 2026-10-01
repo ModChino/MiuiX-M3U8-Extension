@@ -1,0 +1,345 @@
+/* MiuiX M3U8 浏览器扩展 —— Miuix 设计 token 与公共组件样式
+ *
+ * 数值全部来自 MiuiX M3U8/docs/MIUIX_TOKENS.md（miuix 源码逐行抄录，带源文件行号）：
+ *   颜色   §1 53 个 token（Light / Dark）
+ *   字号   §2 只有 subtitle 加粗(700)、只有 paragraph 有 1.2em 行高、全部无 letter-spacing
+ *   圆角   §3 Card 16dp / Button 16dp / 小元素 8-12dp（**不是胶囊**）
+ *   尺寸   §3.2 Button 最小 58x40、padding 13/16；§3.3 Switch 49x28（thumb 20，偏移 4->25）
+ *   近似   §6.4 QSS/CSS 的 border-radius 取 0.9x 近似 squircle -> 16dp 用 14px
+ *
+ * 这一份同时被三处使用：popup.html / options.html（普通页面，:root 生效）
+ * 和内容脚本的 Shadow DOM（:root 在 shadow 里不匹配，所以变量同时挂在 .mx-ov 上）。
+ *
+ * 外观是「跟随系统 / 浅色 / 深色」三选一（设置里改，见 options.html 的「外观」卡片）：
+ *   跟随系统 —— 不加类，靠下面的 @media (prefers-color-scheme: dark)
+ *   浅色     —— 根元素加 .mx-force-light，让 @media 里的深色变量整块失效
+ *   深色     —— 根元素加 .mx-force-dark，用文件末尾那份深色变量（系统是浅色也能变深）
+ * 强制类由 lib/logic.js 的 themeClass() 给出，lib/ui.js 的 applyTheme() 负责挂上去。
+ */
+
+:root,
+.mx-ov {
+  /* ---- 颜色（Light）---- */
+  --mx-primary: #3482FF;
+  --mx-on-primary: #FFFFFF;
+  --mx-primary-container: #5D9BFF;
+  --mx-error: #E94634;
+  --mx-on-error: #FFFFFF;
+  --mx-error-container: #FDF6F4;
+  --mx-on-error-container: #410002;
+  --mx-secondary: #E6E6E6;
+  --mx-secondary-variant: #F0F0F0;
+  --mx-on-secondary-variant: #303030;
+  --mx-tertiary-container: #EAF2FF;
+  --mx-on-tertiary-container: #3482FF;
+  --mx-background: #FFFFFF;
+  --mx-surface: #F7F7F7;
+  --mx-on-surface: #000000;
+  --mx-on-surface-secondary: rgba(0, 0, 0, 0.8);
+  --mx-on-surface-summary: rgba(0, 0, 0, 0.6);
+  --mx-on-surface-actions: rgba(0, 0, 0, 0.4);
+  --mx-surface-container: #FFFFFF;
+  --mx-on-surface-container: #000000;
+  --mx-on-surface-container-variant: #959595;
+  --mx-surface-container-high: #E8E8E8;
+  --mx-surface-container-highest: #E8E8E8;
+  --mx-outline: #D9D9D9;
+  --mx-divider: #E0E0E0;
+  --mx-disabled: #B2B2B2;
+  --mx-disabled-primary: #C2D9FF;
+  --mx-on-disabled-primary: #FFFFFF;
+  --mx-scrim: rgba(0, 0, 0, 0.3);
+
+  /* ---- 圆角（0.9x 近似 squircle，见 MIUIX_TOKENS §6.4）---- */
+  --mx-r-xs: 7px;    /* 8dp  */
+  --mx-r-sm: 11px;   /* 12dp */
+  --mx-r-md: 14px;   /* 16dp：Card / Button / TextField */
+  --mx-r-lg: 25px;   /* 28dp：BottomSheet */
+  --mx-r-pill: 999px;
+
+  /* ---- 字体 ---- */
+  --mx-font: MiSans, "MiSans VF", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC",
+             "Source Han Sans SC", "PingFang SC", "Segoe UI", sans-serif;
+  --mx-mono: "MiSans Mono", "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace;
+
+  /* ---- 组件尺寸 ---- */
+  --mx-btn-h: 40px;
+  --mx-btn-min-w: 58px;
+  --mx-field-h: 45px;
+  --mx-switch-w: 49px;
+  --mx-switch-h: 28px;
+  --mx-switch-thumb: 20px;
+  --mx-list-h: 56px;
+  --mx-page-pad: 16px;
+}
+
+/* 深色变量第 ① 份：跟随系统时用。
+ * :not(.mx-force-light) 是给「强制浅色」用的 —— @media 与普通类选择器优先级相同、靠后者赢，
+ * 所以在系统是深色时，把 .mx-force-light 挂到根元素上就能让这一整块失效。
+ * ⚠️ 这一份与文件末尾 .mx-force-dark 里的深色变量**必须同步修改**（CSS 没法复用变量定义）。
+ * ponytail: 没用 light-dark() —— 更短，但浏览器一旦不支持会让变量整体失效、颜色全丢。 */
+@media (prefers-color-scheme: dark) {
+  :root:not(.mx-force-light),
+  .mx-ov:not(.mx-force-light) {
+    --mx-primary: #277AF7;
+    --mx-on-primary: #FFFFFF;
+    --mx-primary-container: #338FE4;
+    --mx-error: #F12522;
+    --mx-on-error: #FFFFFF;
+    --mx-error-container: #2E0603;
+    --mx-on-error-container: #FFDAD6;
+    --mx-secondary: #505050;
+    --mx-secondary-variant: #434343;
+    --mx-on-secondary-variant: #D9D9D9;
+    --mx-tertiary-container: #2B3B54;
+    --mx-on-tertiary-container: #4788FF;
+    --mx-background: #242424;
+    --mx-surface: #000000;
+    --mx-on-surface: #F2F2F2;
+    --mx-on-surface-secondary: rgba(255, 255, 255, 0.8);
+    --mx-on-surface-summary: rgba(255, 255, 255, 0.5);
+    --mx-on-surface-actions: rgba(255, 255, 255, 0.4);
+    --mx-surface-container: #242424;
+    --mx-on-surface-container: rgba(255, 255, 255, 0.9);
+    --mx-on-surface-container-variant: #737373;
+    --mx-surface-container-high: #242424;
+    --mx-surface-container-highest: #2D2D2D;
+    --mx-outline: #404040;
+    --mx-divider: #393939;
+    --mx-disabled: #666666;
+    --mx-disabled-primary: #253E64;
+    --mx-on-disabled-primary: #677893;
+    --mx-scrim: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ================================================================ 基础 */
+
+.mx-root {
+  margin: 0;
+  background: var(--mx-surface);
+  color: var(--mx-on-surface);
+  font-family: var(--mx-font);
+  font-size: 17px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mx-icon { display: block; flex: none; }
+
+/* 只有 subtitle 加粗（MIUIX_TOKENS §2） */
+.mx-section-title { font-size: 14px; font-weight: 700; color: var(--mx-on-surface); }
+.mx-title { font-size: 20px; font-weight: 400; color: var(--mx-on-surface); }   /* title3 */
+.mx-text { font-size: 17px; font-weight: 400; color: var(--mx-on-surface); }    /* main */
+.mx-sub { font-size: 14px; font-weight: 400; color: var(--mx-on-surface-summary); }
+.mx-hint { font-size: 13px; font-weight: 400; color: var(--mx-on-surface-actions); }
+
+/* ================================================================ 卡片 */
+/* Card：圆角 16dp(->14px)、无边框无阴影、底色 surfaceContainer、按下反馈 */
+.mx-card-panel {
+  background: var(--mx-surface-container);
+  border-radius: var(--mx-r-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ================================================================ 文本行 */
+.mx-row { display: flex; align-items: center; gap: 12px; }
+.mx-row-main { flex: 1; min-width: 0; }
+.mx-row-title { font-size: 17px; color: var(--mx-on-surface); }
+.mx-row-sub { font-size: 13px; color: var(--mx-on-surface-summary); margin-top: 2px; }
+
+/* ================================================================ 按钮 */
+/* Button：最小 58x40、圆角 16dp(->14px)、内边距 13/16、字 17px */
+.mx-btn {
+  min-width: var(--mx-btn-min-w);
+  min-height: var(--mx-btn-h);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--mx-r-md);
+  background: var(--mx-secondary-variant);
+  color: var(--mx-on-secondary-variant);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.mx-btn:hover { filter: brightness(0.96); }
+.mx-btn:active { filter: brightness(0.9); }
+.mx-btn:disabled { background: var(--mx-surface-container-highest); color: var(--mx-disabled); cursor: default; filter: none; }
+.mx-btn-primary { background: var(--mx-primary); color: var(--mx-on-primary); }
+.mx-btn-primary:disabled { background: var(--mx-disabled-primary); color: var(--mx-on-disabled-primary); }
+.mx-btn-text { background: transparent; color: var(--mx-primary); padding: 0 12px; }
+.mx-btn-block { width: 100%; }
+
+.mx-icon-btn {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--mx-r-md);
+  background: transparent;
+  color: var(--mx-on-surface-summary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.mx-icon-btn:hover { background: var(--mx-surface-container-highest); color: var(--mx-on-surface); }
+
+/* ================================================================ 输入框 */
+.mx-field {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--mx-field-h);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--mx-r-md);
+  background: var(--mx-surface-container-highest);
+  color: var(--mx-on-surface);
+  font-family: inherit;
+  font-size: 17px;
+}
+.mx-field::placeholder { color: var(--mx-disabled); }
+.mx-field:focus { outline: 2px solid var(--mx-primary); outline-offset: -2px; }
+.mx-field-mono { font-family: var(--mx-mono); font-size: 15px; letter-spacing: 0; }
+
+/* ================================================================ 开关 */
+/* Switch：轨道 49x28 胶囊、滑块 20、未选中偏移 4、选中偏移 4+21=25 */
+.mx-switch { position: relative; display: inline-block; width: var(--mx-switch-w); height: var(--mx-switch-h); flex: none; }
+.mx-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.mx-switch-track {
+  position: absolute; inset: 0; border-radius: 14px;
+  background: var(--mx-secondary); transition: background-color 0.2s ease;
+}
+.mx-switch-thumb {
+  position: absolute; top: 4px; left: 4px;
+  width: var(--mx-switch-thumb); height: var(--mx-switch-thumb);
+  border-radius: 999px; background: #FFFFFF;
+  transition: transform 0.2s ease;
+}
+.mx-switch input:checked ~ .mx-switch-track { background: var(--mx-primary); }
+.mx-switch input:checked ~ .mx-switch-thumb { transform: translateX(21px); }
+.mx-switch input:disabled ~ .mx-switch-track { background: var(--mx-surface-container-highest); }
+.mx-switch input:disabled ~ .mx-switch-thumb { background: var(--mx-disabled); }
+
+/* ================================================================ 分段控件 */
+/* ⚠️ 容器必须用 highest：深色下 surfaceContainerHigh 与卡片底**同为 #242424**，
+   整块控件会"消失"（用户实测反馈"深色后没有框了"）。
+   再叠一层 1px 内描边（inset shadow，不占布局），保证深色下边界清晰。 */
+.mx-seg {
+  display: inline-flex; gap: 4px;
+  background: var(--mx-surface-container-highest);
+  border-radius: var(--mx-r-md);
+  padding: 4px;
+  box-shadow: inset 0 0 0 1px var(--mx-divider);
+}
+.mx-seg label {
+  min-width: 76px; min-height: 32px; padding: 0 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--mx-r-sm); cursor: pointer;
+  font-size: 14px; color: var(--mx-on-surface-summary);
+}
+.mx-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.mx-seg input:checked + span { color: var(--mx-on-surface); }
+/* 选中项：浅色下比容器白、深色下比容器深，靠 outline 再描一圈强化边界 */
+.mx-seg label:has(input:checked) {
+  background: var(--mx-surface-container);
+  color: var(--mx-on-surface);
+  box-shadow: inset 0 0 0 1px var(--mx-outline);
+}
+
+/* ================================================================ 徽标 / 状态 */
+.mx-chip {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  border-radius: var(--mx-r-xs); font-size: 13px; font-weight: 400; flex: none;
+}
+.mx-chip-primary { background: var(--mx-tertiary-container); color: var(--mx-on-tertiary-container); }
+.mx-chip-muted { background: var(--mx-surface-container-highest); color: var(--mx-on-surface-summary); }
+
+.mx-status { font-size: 13px; line-height: 1.5; color: var(--mx-on-surface-summary); word-break: break-all; }
+.mx-status-success { color: var(--mx-primary); }
+.mx-status-error { color: var(--mx-error); }
+.mx-status-warning { color: #FF8A00; }
+
+.mx-divider { height: 1px; background: var(--mx-divider); border: 0; margin: 0; }
+
+/* ================================================================ 候选列表项 */
+/* 列表项：最小高 56、内边距 16（Component.kt）*/
+.mx-cand {
+  width: 100%; box-sizing: border-box; min-height: var(--mx-list-h);
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 0; border-radius: var(--mx-r-sm);
+  background: transparent; color: var(--mx-on-surface);
+  font-family: inherit; text-align: left; cursor: pointer;
+}
+.mx-cand:hover { background: var(--mx-surface-container-highest); }
+.mx-cand[aria-checked="true"] { background: var(--mx-tertiary-container); }
+.mx-cand-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mx-cand-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mx-cand-host { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mx-cand-kind { font-size: 11px; color: var(--mx-on-surface-actions); letter-spacing: 0; flex: none; }
+.mx-cand-path {
+  font-family: var(--mx-mono); font-size: 12px; color: var(--mx-on-surface-summary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mx-cand-meta { font-size: 11px; color: var(--mx-on-surface-actions); }
+.mx-cand-check {
+  flex: none; width: 20px; height: 20px; border-radius: 999px;
+  border: 1.5px solid var(--mx-outline); box-sizing: border-box;
+}
+.mx-cand[aria-checked="true"] .mx-cand-check {
+  border-color: var(--mx-primary); background: var(--mx-primary);
+  box-shadow: inset 0 0 0 4px var(--mx-tertiary-container);
+}
+
+/* 空状态 */
+.mx-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 16px; color: var(--mx-on-surface-actions); }
+.mx-empty-text { font-size: 13px; text-align: center; line-height: 1.6; }
+
+/* ================================================================ 强制外观
+
+ * 深色变量第 ② 份：设置里选「深色」时用（系统本身是浅色也要能变深）。
+ * ⚠️ 上面 @media (prefers-color-scheme: dark) 里那一份和这一份**必须同步修改**：
+ *    CSS 没有变量复用，改一处忘另一处就会出现「跟随系统是深色、强制深色反而淡一档」。
+ * 选择器同时写 :root 与 .mx-ov —— Shadow DOM 里 :root 不匹配，
+ * 只写 :root 的话页面悬浮窗不会跟着变（这是踩过的坑，别删）。
+ */
+:root.mx-force-dark,
+.mx-ov.mx-force-dark {
+  --mx-primary: #277AF7;
+  --mx-on-primary: #FFFFFF;
+  --mx-primary-container: #338FE4;
+  --mx-error: #F12522;
+  --mx-on-error: #FFFFFF;
+  --mx-error-container: #2E0603;
+  --mx-on-error-container: #FFDAD6;
+  --mx-secondary: #505050;
+  --mx-secondary-variant: #434343;
+  --mx-on-secondary-variant: #D9D9D9;
+  --mx-tertiary-container: #2B3B54;
+  --mx-on-tertiary-container: #4788FF;
+  --mx-background: #242424;
+  --mx-surface: #000000;
+  --mx-on-surface: #F2F2F2;
+  --mx-on-surface-secondary: rgba(255, 255, 255, 0.8);
+  --mx-on-surface-summary: rgba(255, 255, 255, 0.5);
+  --mx-on-surface-actions: rgba(255, 255, 255, 0.4);
+  --mx-surface-container: #242424;
+  --mx-on-surface-container: rgba(255, 255, 255, 0.9);
+  --mx-on-surface-container-variant: #737373;
+  --mx-surface-container-high: #242424;
+  --mx-surface-container-highest: #2D2D2D;
+  --mx-outline: #404040;
+  --mx-divider: #393939;
+  --mx-disabled: #666666;
+  --mx-disabled-primary: #253E64;
+  --mx-on-disabled-primary: #677893;
+  --mx-scrim: rgba(0, 0, 0, 0.6);
+}
+
