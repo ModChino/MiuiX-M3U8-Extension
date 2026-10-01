@@ -72,6 +72,26 @@
 
     <div class="mx-row">
       <div class="mx-row-main">
+        <div class="mx-row-title">下载线程数</div>
+        <div class="mx-row-sub">发送到 MiuiX M3U8 的任务用几个线程并发拉分片</div>
+      </div>
+    </div>
+    <div class="mx-seg" id="thread-count">
+      <label><input type="radio" name="threadCount" value=""><span>跟随桌面端</span></label>
+      <label><input type="radio" name="threadCount" value="4"><span>4</span></label>
+      <label><input type="radio" name="threadCount" value="8"><span>8</span></label>
+      <label><input type="radio" name="threadCount" value="16"><span>16</span></label>
+      <label><input type="radio" name="threadCount" value="32"><span>32</span></label>
+      <label><input type="radio" name="threadCount" value="64"><span>64</span></label>
+    </div>
+    <p class="mx-hint">
+      <b>跟随桌面端</b>（默认）表示不带这个参数，由 MiuiX M3U8「新建下载」页那套默认值决定 ——
+      想改就去桌面端改，下次发送即生效。选具体数字则覆盖它，只影响从浏览器发出的任务。
+      任务被服务端限流后重试时，桌面端会自动把线程数减半。
+    </p>
+
+    <div class="mx-row">
+      <div class="mx-row-main">
         <div class="mx-row-title">复制的命令带 --auto-select</div>
         <div class="mx-row-sub">让 N_m3u8DL-RE 自动挑最佳流（主播放列表推荐打开）</div>
       </div>

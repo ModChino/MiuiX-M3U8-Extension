@@ -21,7 +21,8 @@ const DEFAULT_SETTINGS = {
   uiMode: 'popup',        // 'popup' = 点扩展图标弹面板；'overlay' = 页面右下角常驻悬浮窗
   theme: 'system',        // 'system' 跟随系统 | 'light' 强制浅色 | 'dark' 强制深色
   autoSelect: true,       // 复制的命令行里带 --auto-select
-  enrich: true            // 额外请求一次播放列表，用于推断清晰度（拿不到就退回 URL 推断）
+  enrich: true,           // 额外请求一次播放列表，用于推断清晰度（拿不到就退回 URL 推断）
+  threadCount: 0          // 发任务用几个线程：0 = 跟随桌面端，否则 4/8/16/32/64（见 lib/logic.js）
 };
 
 const SETTINGS_KEY = 'settings';
@@ -104,6 +105,7 @@ async function getSettings() {
   out.serverPort = L.normalizePort(out.serverPort);
   out.uiMode = out.uiMode === 'overlay' ? 'overlay' : 'popup';
   out.theme = L.normalizeTheme(out.theme);
+  out.threadCount = L.normalizeThreadCount(out.threadCount);
   return out;
 }
 
@@ -383,7 +385,8 @@ async function sendToApp(tabId, msg, settings) {
   if (!hit) return { ok: false, error: '这个候选已经不在列表里了，刷新后重试' };
 
   const candidate = { url: hit.url, title: msg.title || '', headers: hit.headers };
-  const payload = L.buildAddPayload(candidate, settings.serverToken);
+  const payload = L.buildAddPayload(candidate, settings.serverToken,
+                                    { threadCount: settings.threadCount });
   try {
     const response = await fetch(base + '/add', {
       method: 'POST',

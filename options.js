@@ -28,7 +28,7 @@
   async function load() {
     var res = await send({ type: 'get-settings' });
     var settings = (res && res.ok && res.settings) ||
-      { serverPort: 0, serverToken: '', uiMode: 'popup', theme: 'system', autoSelect: true, enrich: true };
+      { serverPort: 0, serverToken: '', uiMode: 'popup', theme: 'system', autoSelect: true, enrich: true, threadCount: 0 };
     nodes.port.value = settings.serverPort ? String(settings.serverPort) : '';
     nodes.token.value = settings.serverToken || '';
     for (var radio of nodes.modeRadios) {
@@ -39,6 +39,10 @@
       themeRadio.checked = (themeRadio.value === theme);
     }
     U.applyTheme(theme);
+    var threadCount = L.normalizeThreadCount(settings.threadCount);
+    for (var threadRadio of nodes.threadRadios) {
+      threadRadio.checked = (L.normalizeThreadCount(threadRadio.value) === threadCount);
+    }
     nodes.autoSelect.checked = settings.autoSelect !== false;
     nodes.enrich.checked = settings.enrich !== false;
   }
@@ -51,6 +55,10 @@
     for (var radio of nodes.modeRadios) if (radio.checked) uiMode = radio.value;
     var theme = 'system';
     for (var themeRadio of nodes.themeRadios) if (themeRadio.checked) theme = themeRadio.value;
+    var threadCount = 0;
+    for (var threadRadio of nodes.threadRadios) {
+      if (threadRadio.checked) threadCount = L.normalizeThreadCount(threadRadio.value);
+    }
     return {
       settings: {
         serverPort: port,
@@ -58,7 +66,8 @@
         uiMode: uiMode,
         theme: L.normalizeTheme(theme),
         autoSelect: nodes.autoSelect.checked,
-        enrich: nodes.enrich.checked
+        enrich: nodes.enrich.checked,
+        threadCount: threadCount
       }
     };
   }
@@ -105,6 +114,7 @@
     nodes.connText = $('conn-text');
     nodes.modeRadios = Array.prototype.slice.call(document.querySelectorAll('input[name="uiMode"]'));
     nodes.themeRadios = Array.prototype.slice.call(document.querySelectorAll('input[name="theme"]'));
+    nodes.threadRadios = Array.prototype.slice.call(document.querySelectorAll('input[name="threadCount"]'));
 
     $('version').textContent = chrome.runtime.getManifest().version;
 
@@ -114,6 +124,7 @@
     nodes.enrich.addEventListener('change', save);
     for (var radio of nodes.modeRadios) radio.addEventListener('change', save);
     for (var themeRadio of nodes.themeRadios) themeRadio.addEventListener('change', save);
+    for (var threadRadio of nodes.threadRadios) threadRadio.addEventListener('change', save);
     $('test').addEventListener('click', testConnection);
 
     load();

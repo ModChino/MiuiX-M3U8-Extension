@@ -47,3 +47,6 @@ body {
 
 .mx-status { padding: 0 4px 12px; }
 .mx-status[hidden] { display: none; }
+
+/* 线程数分段控件有 6 段（比「界面形式」「外观」宽得多），窄窗口下允许换行，别挤破卡片 */
+#thread-count { flex-wrap: wrap; }

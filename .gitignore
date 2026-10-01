@@ -1,7 +1,9 @@
 # ---- 内部工作文档：只在本机保留，不进仓库 ----
-# HANDOVER 含本机绝对路径 + 桌面端构建/打包流程；VERIFY 含 Windows 打包路径
+# HANDOVER 含本机绝对路径 + 桌面端构建/打包流程；VERIFY 含 Windows 打包路径；
+# SPEC-thread-count 是给桌面端开发会话的接口规格（功能还没落全，先不公开）
 HANDOVER.md
 VERIFY.md
+SPEC-thread-count.md
 
 # ---- 自检与测试页：本机跑，不进仓库 ----
 test/
