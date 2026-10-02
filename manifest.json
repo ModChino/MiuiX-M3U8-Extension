@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MiuiX M3U8 视频嗅探",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "嗅探网页里的 m3u8 / mpd，手动选中一条后连同请求头交给本地 MiuiX M3U8（N_m3u8DL-RE）下载，也可一键复制命令行。",
   "minimum_chrome_version": "116",
   "permissions": [
