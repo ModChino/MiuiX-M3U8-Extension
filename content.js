@@ -75,10 +75,16 @@
    *    x='left'  -> align-items: flex-end     （面板右边缘贴球右边缘，朝左铺）
    *    y='down'  -> flex-direction: column        （球在上、面板在下）
    *    y='up'    -> flex-direction: column-reverse（面板在上、球在下）
-   *  **必须在面板已经可见时调用** —— hidden 时量到的是 0，判断会退化成默认方向。 */
-  function applyPlacement() {
+   *
+   *  **两个时机要求，缺一个判断就是错的**：
+   *    1) 面板尺寸要在**取消隐藏之后**量 —— hidden 时量到的是 0；
+   *    2) 球的位置要用**取消隐藏之前**量到的（fabRect）—— 卡片一显形，上一轮的展开方向
+   *       就已经把球挪到容器另一端了（column 时球在上、column-reverse 时在下），
+   *       拿被挪过的位置去判断，等于拿错误的前提算方向：表现就是「该往上开的却往下开、
+   *       把球顶上去」和「右边明明有空间却往左开」。setCardOpen 负责把那个矩形传进来。 */
+  function applyPlacement(fabRect) {
     if (!nodes.root || !nodes.card || nodes.card.hidden) return;
-    var fab = nodes.fab.getBoundingClientRect();
+    var fab = fabRect || nodes.fab.getBoundingClientRect();
     var card = nodes.card.getBoundingClientRect();
     var plan = L.planOverlayPlacement(fab, card,
       { width: window.innerWidth, height: window.innerHeight }, CARD_GAP, EDGE_MARGIN);
@@ -276,7 +282,8 @@
     if (!nodes.card || nodes.card.hidden === !open) return;
     var fabBefore = nodes.fab.getBoundingClientRect();
     nodes.card.hidden = !open;
-    if (open) applyPlacement();      // 必须在卡片可见之后：这时才量得到面板真实宽高
+    // 面板尺寸要在展开后量（hidden 时是 0），球的位置要用展开前的（见 applyPlacement）
+    if (open) applyPlacement(fabBefore);
     var fabAfter = nodes.fab.getBoundingClientRect();
     var rect = nodes.root.getBoundingClientRect();
     setPos({
