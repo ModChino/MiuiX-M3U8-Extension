@@ -22,6 +22,7 @@
   var POS_KEY = 'overlayPos';   // 悬浮窗位置（拖过之后才有）
   var EDGE_MARGIN = 8;          // 吸附/夹边时离屏幕边的距离
   var SNAP_THRESHOLD = 24;      // 松手时离边缘多近算"靠边"（只吸附左右）
+  var CARD_GAP = 12;            // 面板与球之间的空隙（与 content.css 里 .mx-ov 的 gap 一致）
   var dragState = null;
   var suppressClick = false;
 
@@ -49,9 +50,8 @@
     nodes.root.style.bottom = 'auto';
     nodes.root.style.left = p.left + 'px';
     nodes.root.style.top = p.top + 'px';
-    // 面板朝哪边展开，跟着球所在的半边走：球在右半边就右对齐（面板向左撑开），
-    // 在左半边就左对齐。固定锚右边的话，球被拖到左侧时面板会被推出视口。
-    applySide(p.left + (nodes.root.offsetWidth || 56) / 2);
+    // 展开方向**不在这里决定**：它依赖面板的真实尺寸，只有面板显示着才量得到，
+    // 所以统一由 applyPlacement() 在展开的那一刻算（见 setCardOpen）。
     if (persist) {
       try { chrome.storage.local.set({ [POS_KEY]: p }); } catch (e) { /* 存不了就先算了 */ }
     }
@@ -69,10 +69,21 @@
     });
   }
 
-  /** 根据中心位置决定 flex 对齐方向（left 半边 -> flex-start）。 */
-  function applySide(centerX) {
-    if (!nodes.root) return;
-    nodes.root.style.alignItems = centerX < window.innerWidth / 2 ? 'flex-start' : 'flex-end';
+  /** 按球的位置、面板尺寸、视口剩余空间，决定面板往上下左右哪边展开。
+   *  判定在纯逻辑层（planOverlayPlacement，有单测）；这里只把它落到 flex 上：
+   *    x='right' -> align-items: flex-start   （面板左边缘贴球左边缘，朝右铺）
+   *    x='left'  -> align-items: flex-end     （面板右边缘贴球右边缘，朝左铺）
+   *    y='down'  -> flex-direction: column        （球在上、面板在下）
+   *    y='up'    -> flex-direction: column-reverse（面板在上、球在下）
+   *  **必须在面板已经可见时调用** —— hidden 时量到的是 0，判断会退化成默认方向。 */
+  function applyPlacement() {
+    if (!nodes.root || !nodes.card || nodes.card.hidden) return;
+    var fab = nodes.fab.getBoundingClientRect();
+    var card = nodes.card.getBoundingClientRect();
+    var plan = L.planOverlayPlacement(fab, card,
+      { width: window.innerWidth, height: window.innerHeight }, CARD_GAP, EDGE_MARGIN);
+    nodes.root.style.alignItems = plan.x === 'right' ? 'flex-start' : 'flex-end';
+    nodes.root.style.flexDirection = plan.y === 'down' ? 'column' : 'column-reverse';
   }
 
   /** 手柄可拖动；内部按钮不参与拖动（否则点"收起"会变成拖窗）。 */
@@ -252,22 +263,25 @@
   /**
    * 展开 / 收起面板。
    *
-   * 面板宽 340px、收起后只剩 56px 的悬浮球，而 .mx-ov 是 align-items: flex-end 的
-   * 竖向 flex 容器：**一旦拖动过**（定位由 right/bottom 换成了 left/top），宽度收缩时
-   * 是"左边缘不动、右边缩走"，看上去就是球往左跑。
-   * 所以切换前后按**右边缘**重新锚定一次。
+   * 展开方向是**自适应**的（applyPlacement）：球贴着屏幕下边就往上开、贴着右边就往左开，
+   * 不再写死"面板永远在球下方"——那样球拖到屏幕底部时，面板会被顶出视口。
+   *
+   * 方向一变，球在这个 flex 容器里的位置就整体挪一格（column 时球在上、column-reverse 时球在下），
+   * 而容器是按 left/top（或 CSS 的 right/bottom）锚定的，球就会跳。
+   * 所以切换前后量一次**球自身**的位置差并回补，保证**球原地不动**，只有面板从它旁边长出来。
+   * （原实现只按右边缘重锚，只覆盖了横向；纵向一翻转球就会跳。）
    */
   function setCardOpen(open) {
     if (!nodes.card || nodes.card.hidden === !open) return;
-    var before = nodes.root.getBoundingClientRect();
+    var fabBefore = nodes.fab.getBoundingClientRect();
     nodes.card.hidden = !open;
-    if (nodes.root.style.left) {        // 只有拖动过（left 定位）才需要重锚
-      var after = nodes.root.getBoundingClientRect();
-      // 右对齐时球贴在面板右边 -> 锚右边缘；左对齐时球贴在左边 -> 锚左边缘。
-      // 一句话：**球停在原地，让面板从它那一侧撑开**。
-      var anchorLeft = nodes.root.style.alignItems === 'flex-start';
-      setPos({ left: anchorLeft ? before.left : before.right - after.width, top: after.top }, true);
-    }
+    if (open) applyPlacement();      // 必须在卡片可见之后：这时才量得到面板真实宽高
+    var fabAfter = nodes.fab.getBoundingClientRect();
+    var rect = nodes.root.getBoundingClientRect();
+    setPos({
+      left: rect.left + (fabBefore.left - fabAfter.left),
+      top: rect.top + (fabBefore.top - fabAfter.top)
+    }, true);
     if (open) refresh(false);
   }
 
