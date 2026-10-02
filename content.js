@@ -116,7 +116,8 @@
         var rect = nodes.root.getBoundingClientRect();
         /* 松手时的左右边缘吸附：净空 ≤24px 就贴边（留 8px）。判定在纯逻辑层（snapToEdge，有单测）。
          * 吸附后仍走 setPos -> clampPos 收尾，所以不会被吸到视口外；持久化也由 setPos 负责。
-         * 贴到左边后面板从左往右展开由 applySide 处理（它按控件中心点选对齐方向）。 */
+         * 贴到左边后面板该往哪边展开，不在这里管 —— 由展开那一刻的 applyPlacement
+         * 按球的位置和视口剩余空间现算（见 planOverlayPlacement）。 */
         var snapped = L.snapToEdge(rect.left, rect.width || nodes.root.offsetWidth || 56,
                                    window.innerWidth, EDGE_MARGIN, SNAP_THRESHOLD);
         setPos({ left: snapped, top: rect.top }, true);     // 落位 + 记住
