@@ -25,6 +25,11 @@
   var CARD_GAP = 12;            // 面板与球之间的空隙（与 content.css 里 .mx-ov 的 gap 一致）
   var dragState = null;
   var suppressClick = false;
+  /* 球贴在哪条边上：'left' / 'right' / null（特意停在中间）。
+   * 视口宽窄一变（开关 DevTools、缩放窗口）就按它把球钉回那条边 —— 只做「夹回视口内」
+   * 是不够的：变窄时球被夹到中间，变宽后它自己回不去（实测就是按 F12 顶到左边、
+   * 关掉 F12 停在中间，根本没吸附）。在「恢复位置之后」和「拖动松手之后」各更新一次。 */
+  var edgeGlue = null;
 
   // ---------------------------------------------------------------- 拖动
   /** 视口内留 8px 边距，避免拖出屏幕再也点不到（算法在纯逻辑层，可单测）。 */
@@ -32,6 +37,14 @@
     var rect = nodes.root.getBoundingClientRect();
     return L.clampOverlayPos(left, top, rect.width || 56, rect.height || 56,
                              window.innerWidth, window.innerHeight, 8);
+  }
+
+  /** 重新判定球贴在哪条边上（恢复位置 / 拖动松手之后调用）。 */
+  function markEdgeGlue() {
+    if (!nodes.fab) return;
+    var fab = nodes.fab.getBoundingClientRect();
+    edgeGlue = L.edgeGlueAt(fab.left, fab.width || 56,
+                            window.innerWidth, EDGE_MARGIN, SNAP_THRESHOLD);
   }
 
   /** pos 为空表示回到 CSS 默认的右下角。 */
@@ -127,6 +140,7 @@
         var snapped = L.snapToEdge(rect.left, rect.width || nodes.root.offsetWidth || 56,
                                    window.innerWidth, EDGE_MARGIN, SNAP_THRESHOLD);
         setPos({ left: snapped, top: rect.top }, true);     // 落位 + 记住
+        markEdgeGlue();                                     // 记下吸附到哪条边（视口变化时要跟着走）
         suppressClick = true;                               // 拖完那一下不要当成点击
         setTimeout(function () { suppressClick = false; }, 0);
       }
@@ -237,7 +251,10 @@
     // 悬浮球与卡片标题栏都能拖；标题栏里的按钮不参与拖动
     makeDraggable(nodes.fab);
     makeDraggable(nodes.card.querySelector('.mx-card-head'), true);
-    loadPos().then(function (pos) { if (pos) setPos(pos, false); });
+    loadPos().then(function (pos) {
+      if (pos) setPos(pos, false);
+      markEdgeGlue();   // 位置定下来后记一下球贴在哪条边（没存过位置就是 CSS 的 right:20px）
+    });
     window.addEventListener('resize', onViewportResize);
 
     await refresh(false);
@@ -250,13 +267,23 @@
     shadow = null;
     nodes = {};
     dragState = null;
+    edgeGlue = null;
   }
 
-  /** 窗口尺寸变化后把悬浮窗夹回视口内（否则缩小窗口会把球顶出可视区）。 */
+  /** 窗口尺寸变化（开关 DevTools、缩放窗口）后把球放回它该在的地方。
+   *  ⚠️ 光「夹回视口内」不够：视口变窄时球被夹到中间，再变宽它不会自己回到边上
+   *  （实测：按 F12 顶到左边，关掉 F12 停在中间）。贴边的球要跟着那条边一起走。 */
   function onViewportResize() {
     if (!nodes.root || !nodes.root.style.left) return;
     var rect = nodes.root.getBoundingClientRect();
-    setPos({ left: rect.left, top: rect.top }, true);
+    var left = rect.left;
+    if (edgeGlue) {
+      var fab = nodes.fab.getBoundingClientRect();
+      var target = L.edgeDockX(edgeGlue.side, fab.width || 56,
+                               window.innerWidth, edgeGlue.inset);
+      left = rect.left + (target - fab.left);
+    }
+    setPos({ left: left, top: rect.top }, true);
   }
 
   function loadCss() {
