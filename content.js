@@ -30,6 +30,11 @@
    * 是不够的：变窄时球被夹到中间，变宽后它自己回不去（实测就是按 F12 顶到左边、
    * 关掉 F12 停在中间，根本没吸附）。在「恢复位置之后」和「拖动松手之后」各更新一次。 */
   var edgeGlue = null;
+  /* 用户**最后放下**球的位置（拖动松手 / 恢复位置时更新）。
+   * 自由停靠（没吸附到边上）的球，resize 时要按它重放 —— 拿「当前位置」重放是不行的：
+   * 缩小窗口时球被 clampPos 夹过一次，那个被夹过的位置就成了基准，放大后也回不去
+   * （实测：拖到非吸附位置后缩小再放大，球就悬在中间）。贴边的球不用它，走 edgeGlue。 */
+  var intended = { left: null, top: null };
 
   // ---------------------------------------------------------------- 拖动
   /** 视口内留 8px 边距，避免拖出屏幕再也点不到（算法在纯逻辑层，可单测）。 */
@@ -68,6 +73,14 @@
       top: rect.top
     }, true);                                      // 顺手把坏坐标覆盖掉
     return { side: side, inset: EDGE_MARGIN };
+  }
+
+  /** 记下「用户最后把球放在哪」（拖动松手、恢复位置之后调用）—— resize 的基准。 */
+  function rememberIntended() {
+    if (!nodes.fab) return;
+    var fab = nodes.fab.getBoundingClientRect();
+    intended.left = fab.left;
+    intended.top = fab.top;
   }
 
   /** pos 为空表示回到 CSS 默认的右下角。 */
@@ -164,6 +177,7 @@
                                    window.innerWidth, EDGE_MARGIN, SNAP_THRESHOLD);
         setPos({ left: snapped, top: rect.top }, true);     // 落位 + 记住
         markEdgeGlue();                                     // 记下吸附到哪条边（视口变化时要跟着走）
+        rememberIntended();                                 // 记下基准位置，resize 时按它重放
         suppressClick = true;                               // 拖完那一下不要当成点击
         setTimeout(function () { suppressClick = false; }, 0);
       }
@@ -277,6 +291,7 @@
     loadPos().then(function (pos) {
       if (pos) setPos(pos, false);
       edgeGlue = dockOnRestore();   // 恢复出来的位置一律归到左右边上（见 dockOnRestore）
+      rememberIntended();           // 记下基准位置，resize 时按它重放
     });
     window.addEventListener('resize', onViewportResize);
 
@@ -291,22 +306,27 @@
     nodes = {};
     dragState = null;
     edgeGlue = null;
+    intended = { left: null, top: null };
   }
 
   /** 窗口尺寸变化（开关 DevTools、缩放窗口）后把球放回它该在的地方。
-   *  ⚠️ 光「夹回视口内」不够：视口变窄时球被夹到中间，再变宽它不会自己回到边上
-   *  （实测：按 F12 顶到左边，关掉 F12 停在中间）。贴边的球要跟着那条边一起走。 */
+   *
+   *  ⚠️ 光「夹回视口内」是不够的，而且**基准不能用「当前位置」**：
+   *  窗口缩小时球被 clampPos 夹进来，那个被夹过的位置一旦成了基准，放大后也回不去。
+   *  所以按「用户最后放下的位置」重放：贴边的走 edgeGlue（跟着边一起走），
+   *  自由停靠的走 intended（回到用户放下的那个 x/y），最后再交给 setPos 夹进视口。 */
   function onViewportResize() {
     if (!nodes.root || !nodes.root.style.left) return;
     var rect = nodes.root.getBoundingClientRect();
-    var left = rect.left;
-    if (edgeGlue) {
-      var fab = nodes.fab.getBoundingClientRect();
-      var target = L.edgeDockX(edgeGlue.side, fab.width || 56,
-                               window.innerWidth, edgeGlue.inset);
-      left = rect.left + (target - fab.left);
-    }
-    setPos({ left: left, top: rect.top }, true);
+    var fab = nodes.fab.getBoundingClientRect();
+    var targetLeft = L.resolveOverlayX(edgeGlue, intended.left, fab.left,
+                                       fab.width || 56, window.innerWidth, EDGE_MARGIN);
+    var targetTop = (typeof intended.top === 'number' && isFinite(intended.top))
+      ? intended.top : fab.top;
+    setPos({
+      left: rect.left + (targetLeft - fab.left),
+      top: rect.top + (targetTop - fab.top)
+    }, true);
   }
 
   function loadCss() {
