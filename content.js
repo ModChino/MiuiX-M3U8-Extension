@@ -47,6 +47,29 @@
                             window.innerWidth, EDGE_MARGIN, SNAP_THRESHOLD);
   }
 
+  /** 恢复位置之后把球归位到左边或右边，返回贴边状态。
+   *
+   *  ⚠️ 悬浮球**不接受「停在屏幕中间」这种跨会话的残留状态**。位置存的是**绝对 x**，
+   *  而绝对 x 只在存它的那个视口宽度下才有意义 —— 换个窗口宽度、或者历史上被 F12
+   *  夹到过中间（旧版本会把那个中间坐标 persist 下来），重启 Chrome 一看就还在中间。
+   *  而且**重启不触发 resize**，onViewportResize 那条路根本轮不到。
+   *  所以恢复时统一贴边：已经贴边的保持原样（含它自己的间距），不在边上的贴到它所在的
+   *  那半屏对应的边（贴左 / 贴右）。 */
+  function dockOnRestore() {
+    var fab = nodes.fab.getBoundingClientRect();
+    var fabW = fab.width || 56;
+    var vw = window.innerWidth;
+    var glued = L.edgeGlueAt(fab.left, fabW, vw, EDGE_MARGIN, SNAP_THRESHOLD);
+    if (glued) return glued;                       // 已经在边上 -> 别动它
+    var side = L.nearestEdge(fab.left, fabW, vw);  // 否则贴到它那半屏对应的边
+    var rect = nodes.root.getBoundingClientRect();
+    setPos({
+      left: rect.left + (L.edgeDockX(side, fabW, vw, EDGE_MARGIN) - fab.left),
+      top: rect.top
+    }, true);                                      // 顺手把坏坐标覆盖掉
+    return { side: side, inset: EDGE_MARGIN };
+  }
+
   /** pos 为空表示回到 CSS 默认的右下角。 */
   function setPos(pos, persist) {
     if (!nodes.root) return;
@@ -253,7 +276,7 @@
     makeDraggable(nodes.card.querySelector('.mx-card-head'), true);
     loadPos().then(function (pos) {
       if (pos) setPos(pos, false);
-      markEdgeGlue();   // 位置定下来后记一下球贴在哪条边（没存过位置就是 CSS 的 right:20px）
+      edgeGlue = dockOnRestore();   // 恢复出来的位置一律归到左右边上（见 dockOnRestore）
     });
     window.addEventListener('resize', onViewportResize);
 
